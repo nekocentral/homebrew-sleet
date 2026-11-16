@@ -1,0 +1,44 @@
+name: Update formula
+
+# Points the formula at the newest Sleet release tag. Runs here, in the tap, so it needs no token
+# from another repository.
+on:
+  schedule:
+    - cron: "17 5 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Find the newest release tag
+        id: latest
+        run: |
+          tag=$(git ls-remote --tags --refs https://github.com/nekocentral/Sleet 'v[0-9]*' \
+                | sed 's|.*refs/tags/||' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1)
+          current=$(grep -oE 'tags/v[0-9.]+\.tar\.gz' Formula/sleet.rb | sed 's|tags/||; s|\.tar\.gz||')
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "current=$current" >> "$GITHUB_OUTPUT"
+          echo "newest release: $tag, formula: $current"
+      - name: Update the formula
+        if: steps.latest.outputs.tag != '' && steps.latest.outputs.tag != steps.latest.outputs.current
+        env:
+          TAG: ${{ steps.latest.outputs.tag }}
+        run: |
+          url="https://github.com/nekocentral/Sleet/archive/refs/tags/$TAG.tar.gz"
+          sum=$(curl -fsSL "$url" | sha256sum | cut -d' ' -f1)
+          test ${#sum} -eq 64
+          # the first url/sha256 pair in the file is Sleet itself; the resources come after it
+          awk -v url="$url" -v sum="$sum" '
+            !u && /^  url "/    { print "  url \"" url "\""; u = 1; next }
+            !s && /^  sha256 "/ { print "  sha256 \"" sum "\""; s = 1; next }
+            { print }' Formula/sleet.rb > Formula/sleet.rb.new
+          mv Formula/sleet.rb.new Formula/sleet.rb
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "sleet ${TAG#v}"
+          git push

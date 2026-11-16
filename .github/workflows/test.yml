@@ -1,0 +1,26 @@
+name: Test formula
+
+on:
+  push:
+    paths: ["Formula/**", ".github/workflows/test.yml"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest]
+    steps:
+      # checks this repository out as the tap nekocentral/sleet
+      - uses: Homebrew/actions/setup-homebrew@master
+      - run: brew style nekocentral/sleet
+      - run: brew install --build-from-source nekocentral/sleet/sleet
+      - run: brew test nekocentral/sleet/sleet
+      - run: sleet -V
