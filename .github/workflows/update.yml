@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: write
+  actions: write    # to start the formula test after an update
 
 jobs:
   update:
@@ -42,3 +43,9 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -am "sleet ${TAG#v}"
           git push
+      # a push made by a workflow does not start other workflows, so start the test explicitly
+      - name: Test the updated formula
+        if: steps.latest.outputs.tag != '' && steps.latest.outputs.tag != steps.latest.outputs.current
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run test.yml --ref "$GITHUB_REF_NAME"
