@@ -3,8 +3,8 @@ class Sleet < Formula
 
   desc "ServiceNow from the terminal, using your own browser session"
   homepage "https://github.com/nekocentral/Sleet"
-  url "https://github.com/nekocentral/Sleet/archive/refs/tags/v0.3.0.tar.gz"
-  sha256 "61ae128ff7f1662f0333994f09bb0eebed8c8b1e54df7c69194fa69f899d73b8"
+  url "https://github.com/nekocentral/Sleet/archive/refs/tags/v0.4.0.tar.gz"
+  sha256 "7fdeeb72bc7c1d40721e139df7f7305bbeb6192edb26ecba42c54712bcfb2961"
   license "MIT"
 
   depends_on "libyaml"
