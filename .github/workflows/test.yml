@@ -19,7 +19,7 @@ jobs:
         os: [macos-latest, ubuntu-latest]
     steps:
       # checks this repository out as the tap nekocentral/sleet
-      - uses: Homebrew/actions/setup-homebrew@master
+      - uses: Homebrew/actions/setup-homebrew@main
       - run: brew style nekocentral/sleet
       - run: brew install --build-from-source nekocentral/sleet/sleet
       - run: brew test nekocentral/sleet/sleet
